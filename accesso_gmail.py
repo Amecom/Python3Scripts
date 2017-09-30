@@ -45,38 +45,36 @@ def imap_connect():
 def read_folder(folder_name):
 
     imap = imap_connect()
-
     # readonly = False è utile solo se si vuole eliminare o spostare i messaggi
     imap.select(folder_name, readonly = False)
 
     status, data = imap.search(None, "ALL")
-
     if status != "OK":
         print("status", status )
         return
 
     # i dati vengono restituiti come unicode quindi effettuo una decodifica
-    mail_ids = data[0].decode("ascii")
+    id_string = data[0].decode("ascii")
 
-    id_list = mail_ids.split()   
+    id_list = id_string.split()   
 
-    # converto i numeri numerici in stringhe
+    # PER CONVENIENZA SUCCESSIVA CONVERTO I NUMERI IN STRINGHE
     for n in [ str(x) for x in id_list ]:
 
-        # recupero l'uid del messaggio,
+        # recupero l'UID del messaggio,
         # l'UID è necessario solo per spostare o eliminare il messaggi
-        # solo per leggerlo non è necessario
+        # solo per leggerli non è necessario
         status, data = imap.fetch(n, "(UID)")
         if status != "OK":
             print("imap.fetch({}, (UID)) Error: {} ".format(n, status) )
             return
+        else:
+            # ESTRAPOLO UID DEL MESSAGGIO
+            uid = parse_uid(data[0].decode("ascii"))
 
-        # ESTRAPOLO UID DEL MESSAGGIO
-        uid = parse_uid(data[0].decode("ascii"))
 
         # RECUPERO IL MESSAGGIO VERO E PROPRIO
         status, data = imap.fetch(n, "(RFC822)" )
-
         if status != "OK":
             print("imap.fetch({}, (RFC822)) Error: {} ".format(n, status) )
             return
@@ -88,9 +86,9 @@ def read_folder(folder_name):
                 # accedo al messaggio utilizzando "BytesParser"
                 # perchè mi fornisce una piu' facile lettura degli header
                 # rispetto ad altri metodi
-
                 byte_mex = BytesIO( response_part[1] )
                 msg = BytesParser(policy=default).parse( byte_mex )
+
 
                 # DETTAGLI EMAIL
                 email_id = msg["Message-ID"]
