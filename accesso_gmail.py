@@ -65,16 +65,17 @@ def read_folder(folder_name):
         # l'UID è necessario solo per spostare o eliminare il messaggi
         # solo per leggerli non è necessario
         status, data = imap.fetch(n, "(UID)")
+
         if status != "OK":
             print("imap.fetch({}, (UID)) Error: {} ".format(n, status) )
             return
-        else:
-            # ESTRAPOLO UID DEL MESSAGGIO
-            uid = parse_uid(data[0].decode("ascii"))
 
+        # ESTRAPOLO UID DEL MESSAGGIO
+        uid = parse_uid(data[0].decode("ascii"))
 
         # RECUPERO IL MESSAGGIO VERO E PROPRIO
         status, data = imap.fetch(n, "(RFC822)" )
+
         if status != "OK":
             print("imap.fetch({}, (RFC822)) Error: {} ".format(n, status) )
             return
@@ -117,13 +118,11 @@ def read_folder(folder_name):
 
                         # NON STAMPO A SCHERMO IL CONTENUTO DI BODY PERCHE POTREBBE ESSERE MOLTO LUNGO IN CASO DI ALLEGATI
                         # NEL CASO DI FILE BINARY PER SALVARI OCCORRE CONVERTIRLI 
-                        # body = io.BytesIO( body )
+                        # body = BytesIO( body )
 
                 else:
                     body = msg.get_payload(decode=True)
                     print( body.decode("utf-8") )
-
-        input("enter")
 
 
 def move_message(imap, uid, destination_folder):
